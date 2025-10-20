@@ -5,27 +5,45 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>CenFi</title>
   <style>
+    /* ---------- Global layout ---------- */
     html, body {
       margin: 0;
       height: 100%;
-      background-color: #0F1722; /* solid CenFi navy */
+      background: #0F1722;
       display: flex;
       align-items: center;
       justify-content: center;
+      overflow: hidden;
+      position: relative;
     }
 
+    /* ---------- Subtle spotlight glow ---------- */
+    body::before {
+      content: "";
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at center, rgba(216,222,228,0.12) 0%, transparent 60%);
+      filter: blur(80px);
+      z-index: 0;
+    }
+
+    /* ---------- Logo styling ---------- */
     img {
       width: 320px;
       max-width: 80vw;
+      z-index: 1;
       animation: pulse 5s ease-in-out infinite, shimmer 8s linear infinite;
       filter: drop-shadow(0 0 25px rgba(176,183,191,0.35));
     }
 
+    /* ---------- Pulse animation ---------- */
     @keyframes pulse {
       0%, 100% { transform: scale(1); opacity: 1; }
       50% { transform: scale(1.02); opacity: 0.9; }
     }
 
+    /* ---------- Shimmer animation ---------- */
     @keyframes shimmer {
       0%, 100% {
         filter: drop-shadow(0 0 25px rgba(176,183,191,0.35)) brightness(1);

@@ -12,52 +12,67 @@
     display:grid;place-items:center;
     overflow:hidden;
   }
+
+  /* Pulse the whole stage (doesn't touch filter or pixels) */
   .stage{
-    display:grid;place-items:center;
-    width:min(78vw, 520px);  /* control overall size here */
-  }
-  /* subtle depth so the metal pops */
-  .stage svg{
+    position:relative;
+    width:min(78vw, 520px);
     filter: drop-shadow(0 10px 30px rgba(216,222,228,.18));
+    animation:pulse 7s ease-in-out infinite;
   }
-  /* optional gentle pulse for polish */
-  .stage{ animation:pulse 7s ease-in-out infinite }
-  @keyframes pulse{ 0%,100%{ transform:scale(1)} 50%{ transform:scale(1.01)} }
+  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.012)} }
+
+  /* Light sweep overlay (separate layer so no mask conflict) */
+  .sweep{
+    pointer-events:none;
+    position:absolute; inset:-15% -10%;
+    /* narrow angled beam that slides left→right */
+    background:
+      linear-gradient(75deg,
+        transparent 35%,
+        rgba(255,255,255,.22) 48%,
+        rgba(255,255,255,.65) 50%,
+        rgba(255,255,255,.22) 52%,
+        transparent 65%);
+    transform: translateX(-110%);
+    animation:sweep 6.8s ease-in-out infinite;
+    mix-blend-mode: screen;
+    filter: blur(2px);
+  }
+  @keyframes sweep {
+    0%, 20%   { transform: translateX(-110%) rotate(0.001deg); }
+    55%       { transform: translateX(110%)  rotate(0.001deg); }
+    100%      { transform: translateX(110%)  rotate(0.001deg); }
+  }
 </style>
 </head>
 <body>
   <div class="stage">
-    <!--
-      This SVG loads your PNG and knocks out the mid-gray plate, leaving only the bright metallic strokes.
-      If you need to tweak “how much” to keep, adjust the tableValues in <feFuncA> below.
-    -->
+    <!-- Light sweep lives ABOVE the SVG so it never alters the mask -->
+    <div class="sweep"></div>
+
+    <!-- SVG that loads your PNG and knocks out the plate via luminance -->
     <svg viewBox="0 0 1000 1000" role="img" aria-label="CenFi logo">
       <defs>
-        <!-- 1) Get luminance of the image -->
         <filter id="lum-mask" color-interpolation-filters="sRGB">
-          <!-- Turn RGB into alpha based on brightness -->
           <feColorMatrix in="SourceGraphic" type="luminanceToAlpha" result="lum"/>
-
-          <!-- 2) Threshold the luminance: raise or lower the middle values to keep more/less metal -->
-          <!-- Tweak this line only: move the third/fourth numbers slightly to include more highlights -->
+          <!-- Tweak tableValues to keep more/less metal if needed -->
           <feComponentTransfer in="lum" result="thresh">
-            <!-- tableValues map: 0..1 input -> output alpha; we keep only the bright stuff -->
             <feFuncA type="table" tableValues="0 0 0 0 0 0.25 0.6 0.85 1 1"/>
           </feComponentTransfer>
-
-          <!-- 3) Apply the thresholded alpha as a mask to the original image -->
           <feComposite in="SourceGraphic" in2="thresh" operator="in" result="masked"/>
-          <!-- Optional micro contrast to re-energize chrome -->
+          <!-- tiny gamma lift to keep polish without washout -->
           <feComponentTransfer in="masked">
-            <feFuncR type="gamma" amplitude="1.0" exponent="0.9" offset="0"/>
-            <feFuncG type="gamma" amplitude="1.0" exponent="0.9" offset="0"/>
-            <feFuncB type="gamma" amplitude="1.0" exponent="0.9" offset="0"/>
+            <feFuncR type="gamma" amplitude="1.0" exponent="0.92" offset="0"/>
+            <feFuncG type="gamma" amplitude="1.0" exponent="0.92" offset="0"/>
+            <feFuncB type="gamma" amplitude="1.0" exponent="0.92" offset="0"/>
           </feComponentTransfer>
         </filter>
       </defs>
 
-      <!-- 4) Your existing PNG (cache-bust with ?v=5) -->
-      <image href="logo.png?v=5" x="0" y="0" width="1000" height="1000" filter="url(#lum-mask)" preserveAspectRatio="xMidYMid meet"/>
+      <!-- Your existing PNG (cache-bust with ?v=6) -->
+      <image href="logo.png?v=6" x="0" y="0" width="1000" height="1000"
+             filter="url(#lum-mask)" preserveAspectRatio="xMidYMid meet"/>
     </svg>
   </div>
 </body>

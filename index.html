@@ -13,55 +13,51 @@
     overflow:hidden;
   }
 
-  /* Pulse the whole stage (doesn't touch filter or pixels) */
+  /* Soft, slow pulse to keep the logo alive */
   .stage{
     position:relative;
     width:min(78vw, 520px);
     filter: drop-shadow(0 10px 30px rgba(216,222,228,.18));
-    animation:pulse 7s ease-in-out infinite;
+    animation:pulse 10s ease-in-out infinite;
   }
-  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.012)} }
+  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.008)} }
 
-  /* Light sweep overlay (separate layer so no mask conflict) */
+  /* Light sweep — half speed, 10% intensity */
   .sweep{
     pointer-events:none;
-    position:absolute; inset:-15% -10%;
-    /* narrow angled beam that slides left→right */
+    position:absolute; inset:-20% -10%;
     background:
       linear-gradient(75deg,
-        transparent 35%,
-        rgba(255,255,255,.22) 48%,
-        rgba(255,255,255,.65) 50%,
-        rgba(255,255,255,.22) 52%,
-        transparent 65%);
+        transparent 40%,
+        rgba(255,255,255,0.04) 48%,
+        rgba(255,255,255,0.08) 50%,
+        rgba(255,255,255,0.04) 52%,
+        transparent 60%);
     transform: translateX(-110%);
-    animation:sweep 6.8s ease-in-out infinite;
+    animation:sweep 14s ease-in-out infinite;
     mix-blend-mode: screen;
     filter: blur(2px);
   }
   @keyframes sweep {
-    0%, 20%   { transform: translateX(-110%) rotate(0.001deg); }
-    55%       { transform: translateX(110%)  rotate(0.001deg); }
+    0%, 25%   { transform: translateX(-110%) rotate(0.001deg); }
+    65%       { transform: translateX(110%)  rotate(0.001deg); }
     100%      { transform: translateX(110%)  rotate(0.001deg); }
   }
 </style>
 </head>
 <body>
   <div class="stage">
-    <!-- Light sweep lives ABOVE the SVG so it never alters the mask -->
     <div class="sweep"></div>
 
-    <!-- SVG that loads your PNG and knocks out the plate via luminance -->
+    <!-- SVG + luminance mask to remove gray plate -->
     <svg viewBox="0 0 1000 1000" role="img" aria-label="CenFi logo">
       <defs>
         <filter id="lum-mask" color-interpolation-filters="sRGB">
           <feColorMatrix in="SourceGraphic" type="luminanceToAlpha" result="lum"/>
-          <!-- Tweak tableValues to keep more/less metal if needed -->
           <feComponentTransfer in="lum" result="thresh">
             <feFuncA type="table" tableValues="0 0 0 0 0 0.25 0.6 0.85 1 1"/>
           </feComponentTransfer>
           <feComposite in="SourceGraphic" in2="thresh" operator="in" result="masked"/>
-          <!-- tiny gamma lift to keep polish without washout -->
           <feComponentTransfer in="masked">
             <feFuncR type="gamma" amplitude="1.0" exponent="0.92" offset="0"/>
             <feFuncG type="gamma" amplitude="1.0" exponent="0.92" offset="0"/>
@@ -70,8 +66,7 @@
         </filter>
       </defs>
 
-      <!-- Your existing PNG (cache-bust with ?v=6) -->
-      <image href="logo.png?v=6" x="0" y="0" width="1000" height="1000"
+      <image href="logo.png?v=7" x="0" y="0" width="1000" height="1000"
              filter="url(#lum-mask)" preserveAspectRatio="xMidYMid meet"/>
     </svg>
   </div>
